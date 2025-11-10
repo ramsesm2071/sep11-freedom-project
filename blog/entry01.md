@@ -2,7 +2,7 @@
 ##### 10/7/24
 
 -----
-The tool I'm going to be using for my year-long freedom project is phaser. I chose phaser as it was the best for game making and I had many ideas I wanted to create. A few being a pet management simulator, where you run a pet shop, another being a cat trading card game, something similar to pokemon, my last idea was a pet simulator where you care for a pet feeding, accessorizing and playing with them.
+The tool I'm going to be using for my year-long freedom project is phaser. I chose [phaser](https://phaser.io) as it was the best for game making and I had many ideas I wanted to create. A few being a pet management simulator, where you run a pet shop, another being a cat trading card game, something similar to pokemon, my last idea was a pet simulator where you care for a pet feeding, accessorizing and playing with them.
 
 Some games I looked at included:  [Ethgard Legends]([https://www.hopkinsmedicine.org/health/wellness-and-prevention/keep-your-brain-young-with-music#:~:text=It%20provides%20a%20total%20brain,%2C%20mental%20alertness%2C%20and%20memory.](https://phaser.io/news/2025/04/ethgard-legends)) which was uploaded to phaser on 17 April, 2025. Ethgard Legends is what made me think of the cat trading card game. [Princess Pet Studio](https://phaser.io/news/2017/07/princess-pet-studio) uploaded 5 July, 2017. This is initially what I was thinking of creating because it's a very cute like pet dress up game which I thought was cool is definitely an idea to hold onto and something I can come back to.
 
