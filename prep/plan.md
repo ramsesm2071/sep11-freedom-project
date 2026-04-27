@@ -1,21 +1,30 @@
 # Plan
 
-## Tool: 
-## Product: 
+## Tool: Phaser
+## Product: Space Platformer
 
 ---
 
 ## Timeline
 
 #### MVP
+- Platforms
+- Stars
+- Working Score
+- Background
+- Working Sprite
+- Working Spikes
+- Gameplay Loop/Respawning stars or spikes
 
 - [ ] Task (deadline: X)
   - [ ] Subtask (deadline: X)
 
 #### Beyond MVP
-
-- [ ] Task
-  - [ ] Subtask
+- Change Sprite
+- Change Background
+- Add a new level
+- Add an enemy
+- New obstacles
 
 
 <!-- EXAMPLE
@@ -49,7 +58,7 @@
 
 <!-- DO NOT USE THIS YET
 
-#### Peer Feedback 
+#### Peer Feedback
 
 | Name | Glows | Grows |
 | -------- | ------- | ------- |
