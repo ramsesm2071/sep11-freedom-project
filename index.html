@@ -105,11 +105,15 @@ function create ()
     cursors = this.input.keyboard.createCursorKeys();
 
     //  The stars the player can collect
-    stars = this.physics.add.group({
-        key: 'star',
-        repeat: 11,
-        setXY: { x: 12, y: 0, stepX: 70 }
-    });
+    stars = this.physics.add.group();
+
+    for (var i = 0; i < 12; i++) {
+
+    var x = Phaser.Math.Between(50, 850);
+    var y = Phaser.Math.Between(50, 500);
+
+    var star = stars.create(x, y, 'star');
+    }
 
     stars.children.iterate(function (child) {
 
@@ -179,7 +183,7 @@ function collectStar (player, star)
         //  A new batch of stars to collect
         stars.children.iterate(function (child) {
 
-            child.enableBody(true, child.x, 0, true, true);
+            child.enableBody(true, Phaser.Math.Between(50, 850), 0, true, true);
 
         });
 
