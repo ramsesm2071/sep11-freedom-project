@@ -16,7 +16,7 @@
 
 var config = {
     type: Phaser.AUTO,
-    width: 1000,
+    width: 900,
     height: 800,
     physics: {
         default: 'arcade',
@@ -48,26 +48,30 @@ function preload ()
     this.load.image('space', 'tool/assets/space.png');
     this.load.image('ground', 'tool/assets/platform.png');
     this.load.image('star', 'tool/assets/star.png');
-    this.load.image('bomb', 'tool/assets/bomb.png');
+    this.load.image('asteroid', 'tool/assets/asteroid.png');
     this.load.spritesheet('dude', 'tool/assets/dude.png', { frameWidth: 32, frameHeight: 48 });
 }
 
 function create ()
 {
     //  Background
-    this.add.image(500, 400, 'space');
+    var bg = this.add.image(450, 400, 'space');
+
+    bg.setDisplaySize(900, 800);
 
     //  Contains the ground and 2 ledges
     platforms = this.physics.add.staticGroup();
 
     //  The ground, scaled to fit the width of the game
-    platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+    platforms.create(450, 790, 'ground').setScale(4).refreshBody();
 
     //  Ledges
-    platforms.create(600, 400, 'ground');
-    platforms.create(450, 100 , 'ground');
-    platforms.create(250, 250, 'ground');
-    platforms.create(850, 220, 'ground');
+    platforms.create(600, 600, 'ground');
+    platforms.create(450, 300 , 'ground');
+    platforms.create(250, 450, 'ground');
+    platforms.create(1075, 450, 'ground');
+    platforms.create(850, 150, 'ground');
+    platforms.create(100, 150, 'ground');
 
     // The player and its settings
     player = this.physics.add.sprite(100, 450, 'dude');
@@ -117,7 +121,7 @@ function create ()
     spikes = this.physics.add.group();
 
     //  The score
-    scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#fff' });
 
     //  Collision for both the player,stars, and spikes.
     this.physics.add.collider(player, platforms);
@@ -127,7 +131,7 @@ function create ()
     //  Checks to see if the player overlaps with any of the stars, if so does call the collectStar function adding to the score
     this.physics.add.overlap(player, stars, collectStar, null, this);
 
-    this.physics.add.collider(player, spikes, hitBomb, null, this);
+    this.physics.add.collider(player, spikes, hitAsteroid, null, this);
 }
 
 function update ()
@@ -139,13 +143,13 @@ function update ()
 
     if (cursors.left.isDown)
     {
-        player.setVelocityX(-160);
+        player.setVelocityX(-220);
 
         player.anims.play('left', true);
     }
     else if (cursors.right.isDown)
     {
-        player.setVelocityX(160);
+        player.setVelocityX(220);
 
         player.anims.play('right', true);
     }
@@ -181,16 +185,17 @@ function collectStar (player, star)
 
         var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
 
-        var bomb = spikes.create(x, 16, 'bomb');
-        bomb.setBounce(1);
-        bomb.setCollideWorldBounds(true);
-        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-        bomb.allowGravity = false;
+        var asteroid = spikes.create(x, 16, 'asteroid');
+        asteroid.setBounce(1);
+        asteroid.setCollideWorldBounds(true);
+        asteroid.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        asteroid.allowGravity = false;
 
+        asteroid.setScale(0.02); // Makes asteroid smaller to fit screen.
     }
 }
 
-function hitBomb (player, bomb)
+function hitAsteroid (player, asteroid)
 {
     this.physics.pause();
 
