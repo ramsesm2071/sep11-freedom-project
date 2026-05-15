@@ -140,6 +140,10 @@ function create ()
 
 function update ()
 {
+    if (gameOver && cursors.space.isDown)
+    {
+    location.reload();
+    }
     if (gameOver)
     {
         return;
@@ -168,6 +172,7 @@ function update ()
     {
         player.setVelocityY(-360);
     }
+
 }
 
 function collectStar (player, star)
@@ -204,11 +209,22 @@ function hitAsteroid (player, asteroid)
     this.physics.pause();
 
     player.setTint(0xff0000);
-
     player.anims.play('turn');
+
+    var text = this.add.text(450, 350, 'GAME OVER', {
+        fontSize: '64px',
+        fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    this.add.text(450, 420, 'Press SPACE to restart', {
+        fontSize: '24px',
+        fill: '#ffffff'
+    }).setOrigin(0.5);
 
     gameOver = true;
 }
+
+
 
 </script>
 
