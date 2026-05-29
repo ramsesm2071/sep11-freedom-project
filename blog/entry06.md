@@ -4,7 +4,7 @@
 ## Context
 
 
-The tool I have selected was [phaser](https://phaser.io), and I chose to make a hard platformer game with many randomization aspects to it such as where some items spawn or enemies spawn. I decided to name it [Starbound Steps](https://ramsesm2071.github.io/sep11-freedom-project/) as it took place in space and you collected stars.
+The tool I have selected was [Phaser](https://phaser.io), and I chose to make a hard platformer game with many randomization aspects to it such as where some items spawn or enemies spawn. I decided to name it [Starbound Steps](https://ramsesm2071.github.io/sep11-freedom-project/) as it took place in space and you collected stars. I also tried to make the movement very clean and easy to use, though I did struggle as the game was very framey and buggy when I first created it, I fixed it later, and the movement was much nicer.
 
 -----
 ## Engineering Design Process
