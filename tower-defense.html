@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Cyber Tower Defense: Core Engine</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body { margin: 0; background-color: #000; overflow: hidden; user-select: none; }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var config = {
+    type: Phaser.AUTO,
+    width: 1000,
+    height: 800,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: { preload: preload, create: create, update: update }
+};
+
+var enemies;
+var turrets;
+var bullets;
+
+var money = 200; // Increased starting cash to experiment with placements
+var score = 0;
+var uiText;
+var currentScene;
+
+// Custom configuration variables for towers and fast spawning
+var selectedTowerType = "BASIC";
+var enemySpawnDelay = 1100;     // Dropped from 2500ms down to 1100ms for heavy rush speeds!
+var spawnerEvent;
+
+var pathWaypoints = [
+    { x: -50,  y: 200 },
+    { x: 300,  y: 200 },
+    { x: 300,  y: 600 },
+    { x: 750,  y: 600 },
+    { x: 750,  y: 400 },
+    { x: 500,  y: 400 },
+    { x: 500,  y: -50 }
+];
+
+var game = new Phaser.Game(config);
+
+function preload () {
+    // Canvas textures are cleanly generated with code below.
+}
+
+function create () {
+    currentScene = this;
+
+    // --- ART TEXTURE GENERATOR ENGINE ---
+    // 1. Basic Defense Turret Asset (Blue base)
+    let tGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    tGraphics.fillStyle(0x00aaff, 1); tGraphics.fillRect(0, 0, 32, 32);
+    tGraphics.fillStyle(0xffffff, 1); tGraphics.fillCircle(16, 16, 6);
+    tGraphics.generateTexture('turretAsset', 32, 32);
+
+    // 2. NEW: Rapid Beam Turret Asset (Purple base)
+    let rpGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    rpGraphics.fillStyle(0xbb00ff, 1); rpGraphics.fillRect(0, 0, 32, 32);
+    rpGraphics.fillStyle(0xffffff, 1); rpGraphics.fillCircle(16, 16, 4);
+    rpGraphics.generateTexture('rapidTurretAsset', 32, 32);
+
+    // 3. Creepy Invader Asset
+    let eGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    eGraphics.fillStyle(0xff3333, 1); eGraphics.fillCircle(12, 12, 12);
+    eGraphics.fillStyle(0xffff33, 1); eGraphics.fillCircle(12, 12, 4);
+    eGraphics.generateTexture('enemyAsset', 24, 24);
+
+    // 4. Plasma Bullet Bolt
+    let bGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    bGraphics.fillStyle(0x00ffff, 1); bGraphics.fillCircle(4, 4, 4);
+    bGraphics.generateTexture('bulletAsset', 8, 8);
+
+    // 5. Rapid Mini Bolt (Purple tracer)
+    let rbGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+    rbGraphics.fillStyle(0xff55ff, 1); rbGraphics.fillCircle(3, 3, 3);
+    rbGraphics.generateTexture('rapidBulletAsset', 6, 6);
+
+    // 🗺️ DRAW VISUAL PATH ROAD
+    var pathLines = this.add.graphics();
+    pathLines.lineStyle(40, 0x1a2233, 1);
+    pathLines.beginPath();
+    pathLines.moveTo(pathWaypoints[0].x, pathWaypoints[0].y);
+    for (var i = 1; i < pathWaypoints.length; i++) {
+        pathLines.lineTo(pathWaypoints[i].x, pathWaypoints[i].y);
+    }
+    pathLines.strokePath();
+
+    // Groups Setup
+    enemies = this.physics.add.group();
+    turrets = this.add.group();
+    bullets = this.physics.add.group();
+
+    // Game HUD readout
+    uiText = this.add.text(20, 20, '', { fontSize: '22px', fill: '#00ffcc', fontStyle: 'bold' });
+    updateUI();
+
+    // Set up Keyboard shortcut key listener matrix bindings
+    this.input.keyboard.on('keydown-ONE', function () { selectedTowerType = "BASIC"; updateUI(); });
+    this.input.keyboard.on('keydown-TWO', function () { selectedTowerType = "RAPID"; updateUI(); });
+
+    // Spawner event registration loop
+    spawnerEvent = this.time.addEvent({
+        delay: enemySpawnDelay,
+        callback: spawnInvader,
+        callbackScope: this,
+        loop: true
+    });
+
+    // Handle mouse click triggers to buy/place turrets
+    this.input.on('pointerdown', function (pointer) {
+        var cost = (selectedTowerType === "BASIC") ? 100 : 130;
+
+        if (money >= cost) {
+            money -= cost;
+
+            var gridX = Math.floor(pointer.x / 40) * 40 + 20;
+            var gridY = Math.floor(pointer.y / 40) * 40 + 20;
+
+            var assetName = (selectedTowerType === "BASIC") ? 'turretAsset' : 'rapidTurretAsset';
+            var newTurret = turrets.create(gridX, gridY, assetName);
+            newTurret.setOrigin(0.5, 0.5);
+
+            // Assign distinct module variables based on chosen weapon selection profiles
+            if (selectedTowerType === "BASIC") {
+                newTurret.range = 175;
+                newTurret.fireRate = 800;    // Slower heavy output
+                newTurret.bulletType = 'bulletAsset';
+                newTurret.damage = 1.5;
+            } else {
+                newTurret.range = 140;       // Shorter range bubble
+                newTurret.fireRate = 220;    // INSANELY fast bullet delivery speed loop!
+                newTurret.bulletType = 'rapidBulletAsset';
+                newTurret.damage = 0.5;
+            }
+            newTurret.nextFireTime = 0;
+
+            updateUI();
+        }
+    });
+
+    // Physics overlaps
+    this.physics.add.overlap(bullets, enemies, hitEnemy, null, this);
+}
+
+function update (time) {
+    // Pathway Management Loops
+    enemies.children.iterate(function (enemy) {
+        if (!enemy) return;
+
+        var targetPoint = pathWaypoints[enemy.currentWaypointIndex];
+        var distance = Phaser.Math.Distance.Between(enemy.x, enemy.y, targetPoint.x, targetPoint.y);
+
+        if (distance < 6) {
+            enemy.currentWaypointIndex++;
+            if (enemy.currentWaypointIndex >= pathWaypoints.length) {
+                enemy.destroy();
+                score = Math.max(0, score - 60);
+                updateUI();
+                return;
+            }
+        }
+        currentScene.physics.moveToObject(enemy, pathWaypoints[enemy.currentWaypointIndex], 95);
+    });
+
+    // Radar Tracking Engagement Arrays Loops
+    turrets.children.iterate(function (turret) {
+        if (!turret) return;
+
+        var closestEnemy = null;
+        var shortestDistance = turret.range;
+
+        enemies.children.iterate(function (enemy) {
+            if (!enemy) return;
+            var dist = Phaser.Math.Distance.Between(turret.x, turret.y, enemy.x, enemy.y);
+            if (dist < shortestDistance) {
+                shortestDistance = dist;
+                closestEnemy = enemy;
+            }
+        });
+
+        if (closestEnemy && time > turret.nextFireTime) {
+            fireTurretLaser(turret, closestEnemy);
+            turret.nextFireTime = time + turret.fireRate;
+        }
+    });
+}
+
+function spawnInvader() {
+    var start = pathWaypoints[0];
+    var enemy = enemies.create(start.x, start.y, 'enemyAsset');
+    enemy.setOrigin(0.5, 0.5);
+
+    enemy.currentWaypointIndex = 1;
+    enemy.hp = 3.5; // Slightly scaling hitpoint buffer to withstand rapid fire
+}
+
+function fireTurretLaser(turret, target) {
+    var bullet = bullets.create(turret.x, turret.y, turret.bulletType);
+    bullet.setOrigin(0.5, 0.5);
+    bullet.damageAmount = turret.damage; // Pass weapon damage parameters down onto tracking particle node
+
+    currentScene.physics.moveToObject(bullet, target, 500);
+}
+
+function hitEnemy(bullet, enemy) {
+    var dmg = bullet.damageAmount || 1;
+    bullet.destroy();
+
+    enemy.hp -= dmg;
+    if (enemy.hp <= 0) {
+        enemy.destroy();
+        money += 25;
+        score += 100;
+        updateUI();
+    }
+}
+
+function updateUI() {
+    var basicIndicator = (selectedTowerType === "BASIC") ? " > [SELECTED] <" : "";
+    var rapidIndicator = (selectedTowerType === "RAPID") ? " > [SELECTED] <" : "";
+
+    uiText.setText(
+        'Credits: $' + money + ' | Score: ' + score + '\n' +
+        'Press: Heavy Cannon ($100)' + basicIndicator + '\n' +
+        'Press: Rapid Laser ($130)' + rapidIndicator
+    );
+}
+
+</script>
+
+</body>
+</html>
